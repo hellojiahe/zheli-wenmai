@@ -1,0 +1,14 @@
+{
+  "name": "zheli-wenmai",
+  "version": "1.0.0",
+  "description": "浙里文脉：文化遗产空间研究交互图集",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node preview.cjs",
+    "test": "node tools/verify_atlas.cjs"
+  }
+}
