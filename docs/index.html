@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="从全国重点文物保护单位到浙江水系、杭州市地形，用地图探索文化遗产的空间分布。">
+  <meta name="theme-color" content="#204e41"><title>浙里文脉 · 文保空间图集</title>
+  <link rel="stylesheet" href="style.css?v=20261117-2">
+</head>
+<body>
+<header class="header"><a class="brand" href="#national"><span class="seal">文</span><span><b>浙里文脉</b><small>ZHEJIANG HERITAGE ATLAS</small></span></a><div class="header-middle">以山水为经 · 以文脉为纬</div><div class="header-actions"><span class="demo-tag"><i></i>空间研究图集</span><button class="text-button" id="aboutBtn">数据说明 ↗</button></div></header>
+<nav class="nav" aria-label="研究专题"><button data-mode="national" class="active">全国概览</button><button data-mode="heritage">浙江文物</button><button data-mode="chronology">年代演变</button><button data-mode="terrain">杭州高程</button><button data-mode="river">浙江水系</button><button data-mode="culture">村落与非遗</button><button data-mode="poi">周边服务</button><a href="#researchFigures">研究图件</a></nav>
+<main>
+<section class="intro"><div><p class="eyebrow" id="chapter">01 / NATIONAL ATLAS</p><h1 id="pageTitle">全国重点文物保护单位分布</h1><p id="pageSubtitle">第一至第八批 · 省级统计与热力分布</p></div><div class="intro-index" aria-hidden="true">图集 <b id="plateNumber">01</b> / 07</div></section>
+<section class="metrics" id="metrics" aria-label="当前统计"></section>
+<section class="workspace" id="workspace">
+  <aside class="filters panel"><div class="panel-heading"><h2>探索条件</h2><button id="reset" class="text-button">重置</button></div><div id="filterBody"></div><div class="filter-foot"><span class="tiny-compass">⌖</span><p>浙江 · 文化遗产<br><b>空间研究图集</b></p></div></aside>
+  <div class="map-panel panel"><div class="map-toolbar"><div><b id="mapHeading">全国</b><span id="mapCaption"></span></div><div class="segmented" id="selectionMode"></div></div>
+  <div class="map-canvas" id="mapCanvas"><svg id="map" viewBox="0 0 720 620" role="group" aria-label="文保空间分布交互地图"></svg><div class="map-inset"><span class="north">N</span><svg width="18" height="32" viewBox="0 0 18 32"><path d="M9 0L17 30L9 24L1 30Z" fill="#244e44"/><path d="M9 0V24L17 30Z" fill="#b8c9c1"/></svg></div>
+  <div class="map-tools"><button id="zoomIn" aria-label="放大地图">＋</button><button id="zoomOut" aria-label="缩小地图">−</button><button id="fitMap" aria-label="恢复地图全貌">⌖</button></div><div id="mapTooltip" class="map-tooltip" hidden></div>
+  <section id="pointCard" class="point-card" aria-label="所选文保单位" hidden><button data-action="back" aria-label="关闭点位信息">×</button><small>全国重点文物保护单位</small><strong id="pointName"></strong><div>年代　<b id="pointEra"></b></div></section></div>
+  <div class="map-legend" id="mapLegend"></div><p class="map-credit" id="mapCredit"></p></div>
+  <aside class="details panel" id="details" aria-live="polite"><p>正在读取地图数据…</p></aside>
+</section>
+<section id="pending" class="panel pending" hidden></section>
+<section class="panel study-panel" id="studyPanel" hidden></section>
+<section class="chart-grid" id="charts"><article class="panel chart-panel"><div class="panel-heading"><div><span class="eyebrow">DISTRIBUTION</span><h2 id="chartTitle"></h2></div><span class="small-muted" id="chartScope"></span></div><div id="bars"></div></article><article class="panel insight-panel"><div class="panel-heading"><div><span class="eyebrow">FIELD NOTES</span><h2 id="analysisTitle"></h2></div><span class="insight-icon">↗</span></div><div id="analysisContent"></div></article></section>
+<section class="research-figures" id="researchFigures"><div class="research-heading"><div><span class="eyebrow">QGIS RESEARCH ARCHIVE</span><h2>研究图件 · 从全国到浙江</h2><p>保留原始成果，点击查看高清图。网页交互中的海拔带与缓冲区名称按实际统计含义标注。</p></div></div><div class="research-grid" id="researchGallery"></div></section>
+<footer><span><b>浙里文脉</b> / 文化遗产空间研究图集</span><span>数据范围与统计方法详见「数据说明」</span></footer>
+</main>
+<dialog id="aboutDialog"><button id="closeDialog" class="dialog-close" aria-label="关闭数据说明">×</button><span class="eyebrow">DATA &amp; METHODS</span><h2>数据与统计口径</h2><div id="sourceNotes"></div></dialog>
+<script defer src="raster-assets.js?v=20261117"></script><script defer src="periods.js?v=20261117-2"></script><script defer src="map-view.js?v=20261117-3"></script><script defer src="app.js?v=20261117-2"></script>
+</body></html>
