@@ -2,7 +2,9 @@
 
 用交互地图探索第一至第八批全国重点文物保护单位的空间分布，聚焦浙江文物、历史年代、杭州高程与浙江河网。
 
-当前公开展示地址：[浙里文脉](https://zheli-wenmai-demo-1031.earlyfawn35.chatgpt.site/)。此仓库提供可独立运行、可部署到 GitHub Pages 的静态网站副本。
+公开访问网站：[浙里文脉 · GitHub Pages](https://hellojiahe.github.io/zheli-wenmai/)。浏览网站无需登录 GitHub。
+
+原展示地址：[浙里文脉](https://zheli-wenmai-demo-1031.earlyfawn35.chatgpt.site/)。此仓库提供可独立运行的网站源文件，由 GitHub Pages 从 `main` 分支的 `docs/` 目录自动发布。
 
 ## 功能
 
