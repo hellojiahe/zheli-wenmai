@@ -1,0 +1,104 @@
+[
+  {
+    "file": "location-context.jpg",
+    "source": "区位图02.jpg",
+    "title": "研究区区位",
+    "width": 3507,
+    "height": 2480,
+    "bytes": 1203123,
+    "frames": 1,
+    "thumbnail": "location-context-thumb.webp"
+  },
+  {
+    "file": "national-type-points.jpg",
+    "source": "全国文保单位分布图.jpg",
+    "title": "全国文保类型与点位",
+    "width": 3507,
+    "height": 2480,
+    "bytes": 1396927,
+    "frames": 1,
+    "thumbnail": "national-type-points-thumb.webp"
+  },
+  {
+    "file": "national-province-share.jpg",
+    "source": "饼图1.jpg",
+    "title": "省域数量与全国占比",
+    "width": 3507,
+    "height": 2480,
+    "bytes": 1216343,
+    "frames": 1,
+    "thumbnail": "national-province-share-thumb.webp"
+  },
+  {
+    "file": "national-heatmap-qgis.jpg",
+    "source": "《第一至第八批全国重点文物保护单位数量分布图》2.jpg",
+    "title": "全国热力图",
+    "width": 3507,
+    "height": 2480,
+    "bytes": 1164260,
+    "frames": 1,
+    "thumbnail": "national-heatmap-qgis-thumb.webp"
+  },
+  {
+    "file": "zhejiang-type-points.jpg",
+    "source": "浙江省全国文保.jpg",
+    "title": "浙江文保类型与点位",
+    "width": 3507,
+    "height": 2480,
+    "bytes": 1049852,
+    "frames": 1,
+    "thumbnail": "zhejiang-type-points-thumb.webp"
+  },
+  {
+    "file": "zhejiang-river-buffers.jpg",
+    "source": "河流缓冲区.jpg",
+    "title": "浙江河网缓冲区",
+    "width": 3507,
+    "height": 2480,
+    "bytes": 2005899,
+    "frames": 1,
+    "thumbnail": "zhejiang-river-buffers-thumb.webp"
+  },
+  {
+    "file": "hangzhou-terrain-qgis.jpg",
+    "source": "高程-浙江省全国文保.jpg",
+    "title": "杭州高程与文保点",
+    "width": 3507,
+    "height": 2480,
+    "bytes": 1720418,
+    "frames": 1,
+    "thumbnail": "hangzhou-terrain-qgis-thumb.webp"
+  },
+  {
+    "file": "hangzhou-elevation-comparison.png",
+    "source": "占比对比.png",
+    "title": "高程面积与文保点占比",
+    "width": 3583,
+    "height": 1558,
+    "bytes": 69694,
+    "frames": 1,
+    "thumbnail": "hangzhou-elevation-comparison-thumb.webp"
+  },
+  {
+    "file": "dynasty-periods-red.png",
+    "source": "朝代更替_深红圆点.png",
+    "title": "六时期深红圆点拼图",
+    "width": 3507,
+    "height": 2480,
+    "bytes": 7445887,
+    "frames": 1,
+    "thumbnail": "dynasty-periods-red-thumb.webp"
+  },
+  {
+    "file": "dynasty-evolution-1p2s.gif",
+    "source": "浙江文保年代分布_深红圆点_1.2秒.gif",
+    "title": "六时期深红圆点动画",
+    "width": 1169,
+    "height": 1076,
+    "bytes": 3501968,
+    "frames": 6,
+    "durationMs": 1200,
+    "loop": 0,
+    "thumbnail": "dynasty-evolution-1p2s-thumb.webp"
+  }
+]

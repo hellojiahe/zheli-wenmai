@@ -1,0 +1,153 @@
+{
+  "dem": {
+    "image": "data/dem.png",
+    "source": "杭州市高程数据.tif",
+    "crs": "EPSG:4326",
+    "bounds": [
+      118.333472222,
+      29.195972222,
+      120.927361111,
+      30.555972222
+    ],
+    "classes": [
+      {
+        "label": "低于50米",
+        "color": "#3288bd",
+        "min": null,
+        "max": 50,
+        "areaKm2": 3803.135,
+        "areaShare": 22.281,
+        "pixelCount": 4616176,
+        "pointCount": 34,
+        "pointShare": 73.913
+      },
+      {
+        "label": "50–100米",
+        "color": "#66c2a5",
+        "min": 50,
+        "max": 100,
+        "areaKm2": 1179.582,
+        "areaShare": 6.9107,
+        "pixelCount": 1428092,
+        "pointCount": 6,
+        "pointShare": 13.0435
+      },
+      {
+        "label": "100–200米",
+        "color": "#abdda4",
+        "min": 100,
+        "max": 200,
+        "areaKm2": 3577.522,
+        "areaShare": 20.9592,
+        "pixelCount": 4326239,
+        "pointCount": 4,
+        "pointShare": 8.6957
+      },
+      {
+        "label": "200–500米",
+        "color": "#e6f598",
+        "min": 200,
+        "max": 500,
+        "areaKm2": 5593.374,
+        "areaShare": 32.7693,
+        "pixelCount": 6765008,
+        "pointCount": 2,
+        "pointShare": 4.3478
+      },
+      {
+        "label": "500–1000米",
+        "color": "#fdae61",
+        "min": 500,
+        "max": 1000,
+        "areaKm2": 2615.851,
+        "areaShare": 15.3252,
+        "pixelCount": 3164694,
+        "pointCount": 0,
+        "pointShare": 0.0
+      },
+      {
+        "label": "1000米及以上",
+        "color": "#d73027",
+        "min": 1000,
+        "max": null,
+        "areaKm2": 299.496,
+        "areaShare": 1.7546,
+        "pixelCount": 363143,
+        "pointCount": 0,
+        "pointShare": 0.0
+      }
+    ],
+    "sourceSize": [
+      9338,
+      4896
+    ],
+    "displaySize": [
+      1800,
+      944
+    ],
+    "noData": -9999.0,
+    "pointsSource": "杭州市文保单位（带海拔数据）.geojson",
+    "pointTotal": 47,
+    "validPointTotal": 46,
+    "missingPointTotal": 1,
+    "missingPointNames": [
+      "诸葛、长乐村民居"
+    ],
+    "interval": "lowerInclusive",
+    "areaMethod": "按 WGS84 椭球逐行计算有效 DEM 像元面积，排除 NoData"
+  },
+  "heat": {
+    "image": "data/heat.png",
+    "source": "全国文保单位分布热力图.tif",
+    "crs": "EPSG:4326",
+    "bounds": [
+      67.984405524,
+      15.321901677,
+      136.523396273,
+      54.665412937
+    ],
+    "classes": [
+      {
+        "label": "≤5",
+        "color": "#ffffb2",
+        "min": null,
+        "max": 5
+      },
+      {
+        "label": "5–15",
+        "color": "#fecc5c",
+        "min": 5,
+        "max": 15
+      },
+      {
+        "label": "15–50",
+        "color": "#fd8d3c",
+        "min": 15,
+        "max": 50
+      },
+      {
+        "label": "50–80",
+        "color": "#f03b20",
+        "min": 50,
+        "max": 80
+      },
+      {
+        "label": ">80",
+        "color": "#bd0026",
+        "min": 80,
+        "max": null
+      }
+    ],
+    "sourceSize": [
+      12646,
+      8652
+    ],
+    "displaySize": [
+      2100,
+      1437
+    ],
+    "noData": -9999.0,
+    "interval": "upperInclusive",
+    "valueKind": "热力栅格值"
+  }
+}
