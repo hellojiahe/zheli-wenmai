@@ -8,7 +8,9 @@
     "node": ">=20"
   },
   "scripts": {
+    "prepare:data": "node tools/prepare_browser_data.cjs",
     "start": "node preview.cjs",
-    "test": "node tools/verify_atlas.cjs"
+    "test": "node tools/verify_atlas.cjs",
+    "test:compat": "node tools/verify_atlas.cjs --legacy-browser --failed-gallery"
   }
 }

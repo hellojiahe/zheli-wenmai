@@ -74,7 +74,8 @@
   function rasterImage(dataset, project, clipId) {
     if (!dataset?.bounds || !dataset.image) return '';
     const [w,s,e,n] = dataset.bounds, [l,t]=project([w,n]), [r,b]=project([e,s]);
-    return '<image href="'+escape(window.ATLAS_RASTER_IMAGES?.[dataset.image] || dataset.image)+'" x="'+fixed(l)+'" y="'+fixed(t)+
+    const source=escape(window.ATLAS_RASTER_IMAGES?.[dataset.image] || dataset.image);
+    return '<image href="'+source+'" xlink:href="'+source+'" x="'+fixed(l)+'" y="'+fixed(t)+
       '" width="'+fixed(r-l)+'" height="'+fixed(b-t)+'" preserveAspectRatio="none" pointer-events="none"'+
       (clipId ? ' clip-path="url(#'+clipId+')"' : '')+'/>';
   }
@@ -96,7 +97,7 @@
       return '<path id="atlas-shape-'+i+'" d="'+cache.get(key)+'" fill-rule="evenodd" clip-rule="evenodd"/>';
     }).join('');
   }
-  function regionUse(i, attrs='') { return '<use href="#atlas-shape-'+i+'" '+attrs+'/>'; }
+  function regionUse(i, attrs='') { return '<use href="#atlas-shape-'+i+'" xlink:href="#atlas-shape-'+i+'" '+attrs+'/>'; }
 
   function regionCount(f) {
     const n=name(f), overrides=spec.regionCounts;
@@ -303,7 +304,8 @@
   function attach() {
     svg=byId('map'); tooltip=byId('mapTooltip');legend=byId('mapLegend');
     svg.setAttribute('viewBox','0 0 '+W+' '+H);
-    new ResizeObserver(placePointCard).observe(byId('mapCanvas'));
+    if (typeof window.ResizeObserver==='function') new window.ResizeObserver(placePointCard).observe(byId('mapCanvas'));
+    else window.addEventListener('resize',placePointCard);
     svg.style.touchAction='pan-y';
     byId('zoomIn').onclick=()=>adjustZoom(1.5);
     byId('zoomOut').onclick=()=>adjustZoom(1/1.5);

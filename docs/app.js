@@ -17,7 +17,7 @@
     culture:['LIVING HERITAGE','村落与非遗 · 数据观察','保留已提供的省域非遗汇总，明确点位分析所需的数据。'],
     poi:['NEARBY SERVICES','文保点周边服务','为交通接驳、停车与公共服务分析准备统一的设施点位。']
   };
-  let data,raster,research,local,hz,periods,timer=null;
+  let data,raster,research,local,hz,periods,timer=null,ready=false,bufferRequest=null,bufferLoading=false,bufferError='';
   const state={mode:'national',region:'',point:null,type:'',era:'',query:'',band:'',riverGroup:'rivers',river:null,km:5,selection:'point',nationalView:'choropleth',period:'',buffer:'',playing:false};
   const countBy=(rows,field)=>{const m=new Map();for(const p of rows)m.set(p[field]||'未记录',(m.get(p[field]||'未记录')||0)+1);return [...m].sort((a,b)=>b[1]-a[1]);};
   const select=(id,label,opts,value)=>'<label class="field-label" for="'+id+'">'+label+'</label><select id="'+id+'">'+opts.map(([v,t])=>'<option value="'+esc(v)+'" '+(String(v)===String(value)?'selected':'')+'>'+esc(t)+'</option>').join('')+'</select>';
@@ -52,6 +52,8 @@
     if(terrain())out+=select('band','点位海拔',[['','全部海拔'],...raster.dem.classes.map((c,i)=>[i,c.label]),['missing','海拔缺失']],state.band);
     if(state.mode==='river'){
       out+=select('buffer','QGIS研究缓冲范围',[['','不叠加'],...research.river.groups.map(g=>[g.id,g.name+' · '+g.bufferKm+'千米'])],state.buffer);
+      if(bufferLoading)out+='<p class="hint" role="status">正在加载所选研究缓冲图层，其余地图可继续浏览。</p>';
+      if(bufferError)out+='<p class="hint" role="status">缓冲图层加载未完成。'+button('retryBuffer','','重新加载缓冲图层')+'</p>';
       out+=select('riverGroup','交互水系',[['rivers','三级以上河流'],['majorRivers','一级河流']],state.riverGroup);
       out+=select('river','河流 / 河段',data[state.riverGroup].features.map(f=>[f.properties.id,f.properties.name]),state.river);
       out+='<label class="range-label" for="km">单河探索距离 <b>'+state.km+'千米</b></label><input id="km" type="range" min="0.8" max="15" step="0.2" value="'+state.km+'"><p class="hint">单河距离用于交互探索，与下方三类研究缓冲统计分别展示。</p>';
@@ -123,23 +125,37 @@
     poi:{title:'从文保资源走向周边服务',text:'后续接入设施点位后，可比较每处文保单位周边公交、停车和公共服务覆盖，优先识别服务不足的点位。',files:['zhejiang-type-points.jpg']}
   };
   let manifest=[];
-  function assetLink(file,large=false){const a=manifest.find(a=>a.file===file);if(!a)return '';return '<a class="study-figure" href="research-figures/'+file+'" target="_blank" rel="noopener"><img src="research-figures/'+(large||file.endsWith('.gif')?file:a.thumbnail)+'" loading="lazy" alt="'+esc(a.title)+'"><span>'+esc(a.title)+' · 查看原图 ↗</span></a>';}
+  function assetLink(file,large=false){const a=manifest.find(a=>a.file===file);if(!a)return '';const original='research-figures/'+file,thumb=large||file.endsWith('.gif')?file:a.thumbnail;return '<a class="study-figure" href="'+original+'" target="_blank" rel="noopener"><picture>'+(thumb!==file?'<source srcset="research-figures/'+thumb+'" type="image/webp">':'')+'<img src="'+original+'" data-original="'+original+'" loading="lazy" decoding="async" width="'+a.width+'" height="'+a.height+'" alt="'+esc(a.title)+'"></picture><span>'+esc(a.title)+' · 查看原图 ↗</span></a>';}
   function renderStudy(){const s=studies[state.mode];html('studyPanel','<div class="study-heading"><div><span class="eyebrow">RESEARCH FINDINGS / 研究观察</span><h2>'+s.title+'</h2><p>'+s.text+'</p></div><a href="#researchFigures">全部图件 ↓</a></div><div class="study-figures">'+s.files.map(f=>assetLink(f)).join('')+'</div>');}
   function gallery(){html('researchGallery',manifest.filter(a=>a.file!=='dynasty-evolution-1p2s.gif').map((a,i)=>'<figure class="research-card">'+assetLink(a.file)+'<figcaption><span>PLATE '+String(i+1).padStart(2,'0')+'</span><h3>'+esc(a.title)+'</h3></figcaption></figure>').join(''));}
   function stop(){if(timer)clearInterval(timer);timer=null;state.playing=false;}
-  function go(mode){if(!chapters[mode])return;stop();if(location.hash!=='#'+mode){location.hash=mode;return;}state.mode=mode;reset();render();}
+  function go(mode){if(!ready||!chapters[mode])return;stop();if(location.hash!=='#'+mode){location.hash=mode;return;}state.mode=mode;reset();render();}
   function reset(){Object.assign(state,{region:'',point:null,type:'',era:'',query:'',band:'',selection:'point',period:'',buffer:'',riverGroup:'rivers',km:5});state.river=defaultRiver();}
-  document.addEventListener('click',e=>{const m=e.target.closest('[data-mode]');if(m){go(m.dataset.mode);return;}const b=e.target.closest('[data-action]');if(!b)return;const {action,value}=b.dataset;if(action==='mode')go(value);else if(action==='point'){stop();state.point=Number(value);render();}else if(action==='region'){state.region=value;state.point=null;render();}else if(action==='back'){state.point=null;render();}else if(action==='selection'){state.selection=value;render();}else if(action==='play'){if(timer)stop();else{state.region='';state.type='';state.era='';state.query='';state.point=null;state.playing=true;let i=Math.max(0,periods.groups.findIndex(g=>g.id===state.period));state.period=periods.groups[i].id;timer=setInterval(()=>{i=(i+1)%periods.groups.length;state.period=periods.groups[i].id;state.point=null;render();},1200);}render();}});
-  $('filterBody').addEventListener('change',e=>{const {id,value}=e.target;if(id==='query')return;stop();if(id==='km')state.km=Number(value);else state[id]=value;if(national()&&id==='type')state.nationalView='points';if(national()&&id==='nationalView'&&value!=='points')state.type='';if(id==='riverGroup')state.river=defaultRiver();state.point=null;render();});
+  document.addEventListener('click',e=>{if(!ready)return;const m=e.target.closest('[data-mode]');if(m){go(m.dataset.mode);return;}const b=e.target.closest('[data-action]');if(!b)return;const {action,value}=b.dataset;if(action==='retryBuffer'){loadBuffers();render();}else if(action==='mode')go(value);else if(action==='point'){stop();state.point=Number(value);render();}else if(action==='region'){state.region=value;state.point=null;render();}else if(action==='back'){state.point=null;render();}else if(action==='selection'){state.selection=value;render();}else if(action==='play'){if(timer)stop();else{state.region='';state.type='';state.era='';state.query='';state.point=null;state.playing=true;let i=Math.max(0,periods.groups.findIndex(g=>g.id===state.period));state.period=periods.groups[i].id;timer=setInterval(()=>{i=(i+1)%periods.groups.length;state.period=periods.groups[i].id;state.point=null;render();},1200);}render();}});
+  $('filterBody').addEventListener('change',e=>{const {id,value}=e.target;if(!ready||id==='query')return;stop();if(id==='km')state.km=Number(value);else state[id]=value;if(national()&&id==='type')state.nationalView='points';if(national()&&id==='nationalView'&&value!=='points')state.type='';if(id==='riverGroup')state.river=defaultRiver();if(id==='buffer'&&value&&!research.river.groups.find(g=>g.id===value)?.geometry)loadBuffers();state.point=null;render();});
   $('filterBody').addEventListener('submit',e=>{e.preventDefault();stop();state.query=$('query').value.trim();state.point=null;render();});
-  $('reset').onclick=()=>{stop();reset();render();$('fitMap').click();};$('aboutBtn').onclick=()=>$('aboutDialog').showModal();$('closeDialog').onclick=()=>$('aboutDialog').close();
-  async function read(path){const r=await fetch(path);if(!r.ok)throw new Error(path+'加载失败');return r.json();}
+  $('reset').onclick=()=>{if(!ready)return;stop();reset();render();$('fitMap').click();};$('aboutBtn').onclick=()=>{const d=$('aboutDialog');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');};$('closeDialog').onclick=()=>{const d=$('aboutDialog');if(typeof d.close==='function')d.close();else d.removeAttribute('open');};
+  $('retryLoad').onclick=()=>location.reload();
+  document.addEventListener('error',e=>{const img=e.target;if(img.tagName!=='IMG'||!img.dataset.original||img.dataset.retried)return;img.dataset.retried='true';const source=img.parentElement?.querySelector('source');if(source)source.remove();img.src=img.dataset.original;},true);
+  async function read(path,attempt=0){
+    let timeout;const controller=typeof AbortController==='function'?new AbortController():null;
+    try{return await Promise.race([(async()=>{const r=await fetch(path,controller?{signal:controller.signal}:undefined);if(!r.ok)throw new Error(path+'加载失败（'+r.status+'）');return r.json();})(),new Promise((_,reject)=>{timeout=setTimeout(()=>{if(controller)controller.abort();reject(new Error('地图数据连接超时'));},15000);})]);}
+    catch(e){if(!attempt)return read(path,1);throw e;}
+    finally{clearTimeout(timeout);}
+  }
+  function loadBuffers(){
+    if(bufferRequest)return bufferRequest;bufferLoading=true;bufferError='';
+    bufferRequest=read('data/river-buffers.json').then(groups=>{for(const item of groups){const group=research.river.groups.find(g=>g.id===item.id);if(group)group.geometry=item.geometry;}}).catch(e=>{bufferError=e.message;}).finally(()=>{bufferLoading=false;bufferRequest=null;if(state.mode==='river')render();});
+    return bufferRequest;
+  }
+  function loadGallery(){return read('research-figures/research-assets-manifest.json').then(items=>{manifest=items;gallery();if(ready)renderStudy();}).catch(()=>{html('researchGallery','<p class="method-note">研究图片列表加载未完成。请刷新页面后重试。</p>');});}
   async function init(){
-    [data,raster,research,manifest]=await Promise.all([read('data/vectors.json'),read('data/rasters.json'),read('data/research.json'),read('research-figures/research-assets-manifest.json')]);
+    loadGallery();
+    [data,raster,research]=await Promise.all([read('data/vectors.json'),read('data/rasters.json'),read('data/research-core.json')]);
     data.rivers=groupRivers(data.rivers);data.majorRivers=groupRivers(data.majorRivers);periods=window.buildAtlasPeriods(data.sites.filter(p=>p.province==='浙江省'),research.chronology);local=periods.sites;hz=local.filter(p=>p.city==='杭州市');
     html('sourceNotes','<p>本图集依据用户提供的QGIS成果与第一至第八批全国重点文物保护单位名录制作，非全部不可移动文物清单。</p><ul><li>名录共5,066条点记录，浙江279条、杭州47条；QGIS省域空间计数共5,058处。省域饼图和排名使用后者为分母，不混用两套口径。</li><li>全国34个省级行政区完整保留，南海诸岛与海上断续线沿用既有底图。港澳台的未收录不等于没有遗产，香港空间计数与名录归属的差异单独注明。</li><li>热力图使用原始栅格，5/15/50/80断点表达热力栅格值，不当作省域数量。</li><li>杭州46处有效高程样本；1处缺失。面积按WGS84椭球逐行计算有效DEM像元。网页只标海拔带，原QGIS图件保留供对照。</li><li>三组缓冲统计126/37/20处来自原GPKG。源面积采用EPSG:3857，原研究R值待等积投影复核，各组不能直接相加或比较因果影响。</li><li>年代按14类统一整理，274处已分类、5处待核对。其中“20世纪50年代”补归新中国成立以来；仅写“周”“近代”的记录不强行细分。跨期归入最早所属时期，保留原始年代。六时期原图前两幅点位相似，交互动画使用源字段独立筛选。</li><li>非遗仅有省级汇总；指定目录尚无可用村落和服务POI坐标。更新日期2026年11月17日。</li></ul>');
-    state.mode=chapters[location.hash.slice(1)]?location.hash.slice(1):'national';reset();gallery();render();
+    state.mode=chapters[location.hash.slice(1)]?location.hash.slice(1):'national';reset();ready=true;render();$('loadNotice').hidden=true;
     window.addEventListener('hashchange',()=>{const m=location.hash.slice(1);if(chapters[m]){stop();state.mode=m;reset();render();window.scrollTo(0,0);}});
   }
-  init().catch(e=>{console.error(e);html('details','<h2>图层暂未加载</h2><p>'+esc(e.message)+'</p><button onclick="location.reload()">重新加载</button>');});
+  init().catch(e=>{console.error(e);$('loadNotice').hidden=false;$('loadNotice').querySelector('strong').textContent='地图暂未加载完成';$('loadNotice').querySelector('p').textContent='请重试；如果仍为空白，请切换手机 Wi-Fi / 移动网络，或使用其他浏览器打开。'+e.message;$('retryLoad').hidden=false;html('details','<h2>图层暂未加载</h2><p>'+esc(e.message)+'</p>');});
 })();

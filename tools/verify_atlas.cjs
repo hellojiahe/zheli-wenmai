@@ -2,6 +2,12 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'../docs'),read=f=>JSON.parse(fs.readFileSync(path.join(root,f),'utf8'));
 const vectors=read('data/vectors.json'),research=read('data/research.json'),rasters=read('data/rasters.json'),assets=read('research-figures/research-assets-manifest.json');
+const core=read('data/research-core.json'),buffers=read('data/river-buffers.json');
+assert.deepEqual(core,{...research,river:{...research.river,groups:research.river.groups.map(({geometry,...stats})=>stats)}});
+assert.deepEqual(buffers,research.river.groups.map(({id,geometry})=>({id,geometry})));
+assert(fs.statSync(path.join(root,'data/research-core.json')).size<60000);
+const legacyBrowser=process.argv.includes('--legacy-browser'),failedGallery=process.argv.includes('--failed-gallery'),failedMap=process.argv.includes('--failed-map');
+const requests=[];
 assert.equal(vectors.sites.length,5066);assert.equal(vectors.provinces.features.length,34);
 assert.equal(research.national.provinces.reduce((s,p)=>s+p.count,0),5058);
 assert.equal(research.chronology.groups.reduce((s,g)=>s+g.siteIds.length,0),273);
@@ -15,14 +21,14 @@ const nodes=new Map(),events={};let interval,intervalMs,drawn;
 class Element{
   constructor(id){this.id=id;this.innerHTML='';this.textContent='';this.hidden=false;this.style={};this.dataset={};this.events={};this.classList={toggle(){}};}
   setAttribute(k,v){this[k]=v;} addEventListener(k,f){this.events[k]=f;}
-  querySelector(s){return s==='#atlas-camera'?get('atlas-camera'):null;}
+  querySelector(s){return s==='#atlas-camera'?get('atlas-camera'):this.id==='loadNotice'?get('loadNotice:'+s):null;}
   getBoundingClientRect(){return {left:0,top:0,width:720,height:540};}
   showModal(){this.open=true;}close(){this.open=false;}click(){this.onclick?.();}
 }
 function get(id){if(!nodes.has(id))nodes.set(id,new Element(id));return nodes.get(id);}
 const doc={getElementById:get,querySelectorAll(){return [];},addEventListener(k,f){events['doc:'+k]=f;}};
-const context=vm.createContext({document:doc,console,Map,Set,WeakMap,ResizeObserver:class{observe(){}},
-  fetch:async f=>({ok:true,json:async()=>read(f)}),
+const context=vm.createContext({document:doc,console:failedMap?{...console,error(){}}:console,Map,Set,WeakMap,ResizeObserver:legacyBrowser?undefined:class{observe(){}},setTimeout,clearTimeout,
+  fetch:async f=>{requests.push(f);return {ok:!(failedGallery&&f.includes('research-assets-manifest'))&&!(failedMap&&f==='data/vectors.json'),status:503,json:async()=>read(f)};},
   setInterval(f,ms){interval=f;intervalMs=ms;return 1;},clearInterval(){interval=null;}});
 context.window=context;context.scrollTo=()=>{};context.addEventListener=(k,f)=>events[k]=f;
 let hash='#national';context.location={get hash(){return hash;},set hash(v){hash=v;events.hashchange?.();}};
@@ -35,8 +41,11 @@ const change=(id,value)=>get('filterBody').events.change({target:{id,value}});
 const action=(a,v='')=>events['doc:click']({target:{closest(s){return s==='[data-action]'?{dataset:{action:a,value:v}}:null;}}});
 (async()=>{
   for(let i=0;i<10;i++)await new Promise(r=>setImmediate(r));
+  if(failedMap){assert.equal(get('loadNotice').hidden,false);assert.equal(get('retryLoad').hidden,false);assert(get('loadNotice:strong').textContent.includes('暂未加载'));assert(get('details').innerHTML.includes('503'));assert.equal((get('researchGallery').innerHTML.match(/<figure /g)||[]).length,9);assert.equal(requests.filter(f=>f==='data/vectors.json').length,2);console.log('PASS: failed map download retries once, shows recovery notice, and leaves all 9 research figures available.');return;}
   assert(get('pageTitle').textContent.includes('全国'));assert(get('metrics').innerHTML.includes('5,058'));
+  assert.equal(get('loadNotice').hidden,true);assert(!requests.includes('data/research.json'));assert(!requests.includes('data/river-buffers.json'));
   assert(get('map').innerHTML.includes('南海诸岛'));assert(get('map').innerHTML.includes('531处'));
+  assert(get('map').innerHTML.includes('xlink:href="#atlas-shape-'));
   assert(!/NaN|undefined/.test(get('map').innerHTML));
   change('region','浙江省');assert(get('details').innerHTML.includes('278处'));assert(get('details').innerHTML.includes('5.50%'));
   change('region','台湾省');assert(!get('metrics').innerHTML.includes('NaN'));
@@ -81,11 +90,13 @@ const action=(a,v='')=>events['doc:click']({target:{closest(s){return s==='[data
   change('band','missing');assert.equal(drawn.points.length,1);change('band','');
   action('point',String(drawn.points[0].id));assert(get('pointName').textContent);assert(get('pointEra').textContent);
   get('zoomIn').click();assert(get('atlas-camera').transform.includes('scale(1.5)'));get('fitMap').click();assert(get('atlas-camera').transform.includes('scale(1)'));
-  context.location.hash='#river';for(const g of research.river.groups){change('buffer',g.id);assert(drawn.bufferGeometry);assert(get('map').innerHTML.includes('fill-opacity=".32"'));}
+  context.location.hash='#river';assert(!requests.includes('data/river-buffers.json'));for(const g of research.river.groups){change('buffer',g.id);await new Promise(r=>setImmediate(r));assert(drawn.bufferGeometry);assert(get('map').innerHTML.includes('fill-opacity=".32"'));assert.deepEqual(JSON.parse(JSON.stringify(drawn.bufferGeometry)),g.geometry);}
+  assert.equal(requests.filter(f=>f==='data/river-buffers.json').length,1);
   assert(get('bars').innerHTML.includes('126'));assert(get('bars').innerHTML.includes('4.56'));
   context.location.hash='#culture';assert(get('pending').innerHTML.includes('225'));
   context.location.hash='#poi';assert(get('pending').innerHTML.includes('尚未找到'));
-  assert.equal((get('researchGallery').innerHTML.match(/<figure /g)||[]).length,9);
+  if(failedGallery){assert(get('researchGallery').innerHTML.includes('加载未完成'));assert.equal(requests.filter(f=>f.includes('research-assets-manifest')).length,2);}
+  else{assert.equal((get('researchGallery').innerHTML.match(/<figure /g)||[]).length,9);assert(get('researchGallery').innerHTML.includes('<picture>'));assert(get('researchGallery').innerHTML.includes('type="image/webp"'));assert(get('researchGallery').innerHTML.includes('src="research-figures/location-context.jpg"'));}
   const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const m of html.matchAll(/(?:src|href)="([^"#?]+)(?:\?[^"#]*)?"/g)){if(!m[1].startsWith('http'))assert(fs.existsSync(path.join(root,m[1])),m[1]);}
-  console.log('PASS: national type + province filters; 14 distinct period colors and pending category; earliest-era and raw-era details; Hangzhou era + type + elevation filters; 1200ms playback; 34 regions; 5066 records / 5058 spatial counts; all assets; heat and DEM; popups; zoom; 3 source buffers.');
+  console.log('PASS: national type + province filters; 14 distinct period colors and pending category; Hangzhou filters; 34 regions; audited counts and geometry unchanged; heat and DEM; lazy river polygons; image fallbacks; '+(legacyBrowser?'without ResizeObserver; ':'')+(failedGallery?'map survives failed image list.':'all assets and 9 research figures.'));
 })().catch(e=>{console.error(e);process.exitCode=1;});
